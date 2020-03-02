@@ -55,12 +55,13 @@ public class HomeController {
 
     @RequestMapping(value = "/doUpload", method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
-    public String upload(@RequestParam("user")String user, @RequestParam MultipartFile file) {
+    public ModelAndView upload(@RequestParam("user")String user, @RequestParam MultipartFile file) {
 
         storageService.uploadFile(user, file);
 
         //System.out.println("Success");
-        return "redirect:/success.html";
+        //return "redirect:/success.html";
+        return getUserHome(user);
     }
     
     @RequestMapping(value = "/download")
