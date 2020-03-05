@@ -3,9 +3,8 @@ package com.example.demo;
 import com.example.demo.exception.StorageException;
 import com.example.demo.service.StorageService;
 
-import java.awt.PageAttributes.MediaType;
-import java.io.IOException;
-import java.net.http.HttpHeaders;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.swing.text.Document;
 
+import javafx.util.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -44,10 +45,12 @@ public class HomeController {
 	
 	public ModelAndView getUserHome(String user) {
 		ModelAndView mv = new ModelAndView();
-		LinkedList<String> list = storageService.getUserDocumentsList(user);
+		ArrayList<String[]> list = storageService.getUserDocumentsList(user);
 		mv.addObject("user", user);
 		mv.addObject("list", list);
-		System.out.println(list.size());
+		ArrayList<String[]> sharedList = storageService.getSharedDocumentsList(user);
+		mv.addObject("sharedList", sharedList);
+		//System.out.println(sharedList.size());
 		mv.setViewName("home");
 		return mv; 
 	}
@@ -55,20 +58,28 @@ public class HomeController {
 
     @RequestMapping(value = "/doUpload", method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
-    public ModelAndView upload(@RequestParam("user")String user, @RequestParam MultipartFile file) {
+    public String upload(@RequestParam("user")String user, @RequestParam MultipartFile file) {
 
         storageService.uploadFile(user, file);
 
         //System.out.println("Success");
         //return "redirect:/success.html";
-        return getUserHome(user);
+        return "redirect:/home?user="+user;
     }
     
     @RequestMapping(value = "/download")
     public ModelAndView download(@RequestParam("user")String user, @RequestParam("downloadFileName") String downloadFileName, HttpServletResponse response) {
-    	storageService.downloadFile(user, downloadFileName, response);
-    	return getUserHome(user);
+		if(downloadFileName == null || downloadFileName.isEmpty())
+			return null;
+		storageService.downloadFile(user, downloadFileName, response);
+    	return null;
     }
+
+	@RequestMapping(value = "/share")
+	public String share(@RequestParam("user")String user, @RequestParam("fileToShare") String fileToShare,@RequestParam("shareWith") String shareWith, HttpServletResponse response) {
+		String result = storageService.updateUserInfo(user,fileToShare,shareWith);
+		return "redirect:/home?user="+user;
+	}
     
     
     @ExceptionHandler(StorageException.class)
