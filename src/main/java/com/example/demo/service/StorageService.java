@@ -1,21 +1,17 @@
 package com.example.demo.service;
 
 import com.example.demo.exception.StorageException;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -46,31 +42,26 @@ public class StorageService {
         try {
         	String fileName = file.getOriginalFilename();
         	InputStream is = file.getInputStream();
-        	String userDocumentsPath = documentsPath + user + "//";
-        	//System.out.println(userDocumentsPath);
-        	createDirIfNotExist(userDocumentsPath);
-            Files.copy(is, Paths.get(userDocumentsPath + fileName),
-                    StandardCopyOption.REPLACE_EXISTING);
+        	String userDocumentsPath = documentsPath + user + "/";
+        	HDFSAccess.getInstance().createDirIfNotExist(userDocumentsPath);
+            HDFSAccess.getInstance().uploadFile(is, userDocumentsPath + fileName,3);
         } catch (IOException e) {
         	String msg = String.format("Failed to store file", file.getName());
             throw new StorageException(msg, e);
         }
 
     }
-    public void downloadFile(String user, String fileName, HttpServletResponse response) {
-    	String userDocumentsPath = documentsPath + user + "//";
-    	if(!new File(userDocumentsPath).exists())return;
+    public void downloadFile(String user, String fileName, HttpServletResponse response) throws IOException {
+    	String userDocumentsPath = documentsPath + user + "/";
+    	if(!HDFSAccess.getInstance().exists(userDocumentsPath))return;
 		if (fileName.contains(".pdf")) response.setContentType("application/pdf");
     	response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
     	response.setHeader("Content-Transfer-Encoding", "binary");
+		if(!HDFSAccess.getInstance().exists(userDocumentsPath + fileName))return;
     	try {
     		BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
-    		FileInputStream fis = new FileInputStream(userDocumentsPath + fileName);
-    		int len;
-    		byte[] buf = new byte[1024];
-    		while ((len = fis.read(buf)) > 0) {
-    			bos.write(buf, 0, len);
-    		}
+    		InputStream fis = HDFSAccess.getInstance().readFile(userDocumentsPath + fileName);
+			IOUtils.copy(fis,bos);
     		bos.close();
     		fis.close();
     	} catch (IOException e) {
@@ -79,21 +70,20 @@ public class StorageService {
     }
     
     
-    public String updateUserInfo(String user, String fileName, String sharedWith) {
-    	String filePath = documentsPath + user+"//"+fileName;
-    	if(!new File(filePath).exists())return "Share Failed: File does not exist";
-    	String userInfoPath = metadataPath + sharedWith + "//metadata.txt";
-		createDirIfNotExist(metadataPath + sharedWith);
-    	File file = new File(userInfoPath);
-    	if(!file.exists()){
+    public String updateUserInfo(String user, String fileName, String sharedWith) throws IOException {
+    	String filePath = documentsPath + user+"/"+fileName;
+    	if(!HDFSAccess.getInstance().exists(filePath))return "Share Failed: File does not exist";
+    	String userInfoPath = metadataPath + sharedWith + "/metadata.txt";
+		HDFSAccess.getInstance().createDirIfNotExist(metadataPath + sharedWith);
+    	if(!HDFSAccess.getInstance().exists(userInfoPath)){
 			try {
-				file.createNewFile();
+				HDFSAccess.getInstance().createFile(userInfoPath);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(userInfoPath));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(HDFSAccess.getInstance().readFile(userInfoPath)));
 			String line;
 			boolean found = false;
 			while((line = reader.readLine())!=null) {
@@ -105,7 +95,7 @@ public class StorageService {
 			}
 			reader.close();
 			if(!found){
-				BufferedWriter writer = new BufferedWriter(new FileWriter(userInfoPath,true));
+				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(HDFSAccess.getInstance().appendFile(userInfoPath)));
 				writer.write(fileName+","+user+"\n");
 				writer.close();
 				return "Share Succeed";
@@ -117,34 +107,43 @@ public class StorageService {
 		}
 		return "Share Failed: Unknown Reason";
     }
-    private void createDirIfNotExist(String dirPath) {
-    	File thrDir = new File(dirPath);
-    	if (!thrDir.exists()){
-    		createDirIfNotExist(thrDir.getParent());
-    		thrDir.mkdir();
-		}
-    }
     
     
-    public ArrayList<String[]> getUserDocumentsList(String user) {
-    	File folder = new File(documentsPath + user);
-    	File[] files = folder.listFiles();
+    public ArrayList<String[]> getUserDocumentsList(String user) throws IOException {
+		RemoteIterator<LocatedFileStatus> status = HDFSAccess.getInstance().listFiles(documentsPath + user);
 		ArrayList<String[]> results = new ArrayList<>();
-    	if(files!=null){
-			for(int i=0;i<files.length;++i){
-				results.add(new String[]{files[i].getName(),files[i].length()/1024+" KB"});
-			}
+    	while(status.hasNext()){
+			LocatedFileStatus fs = status.next();
+    		results.add(new String[]{fs.getPath().getName(),byteToSize(fs.getLen())});
 		}
     	return results;
     }
 
+    private String byteToSize(Long numBytes){
+    	if(numBytes>=1024){
+    		numBytes/=1024;
+    		if(numBytes>=1024){
+    			numBytes/=1024;
+    			if(numBytes>=1024){
+    				numBytes/=1024;
+    				return numBytes +" GB";
+				}else{
+    				return numBytes +" MB";
+				}
+			}else{
+    			return numBytes +" KB";
+			}
+		}else{
+    		return numBytes+" Bytes";
+		}
+	}
 
-	public ArrayList<String[]> getSharedDocumentsList(String user) {
-		File metadata = new File(metadataPath + user + "//metadata.txt");
+
+	public ArrayList<String[]> getSharedDocumentsList(String user) throws IOException {
 		ArrayList<String[]> results = new ArrayList<>();
-		if(metadata.exists()) {
+		if(HDFSAccess.getInstance().exists(metadataPath + user + "/metadata.txt")) {
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(metadata));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(HDFSAccess.getInstance().readFile(metadataPath + user + "/metadata.txt")));
 				String line;
 				while ((line = reader.readLine()) != null) {
 					String[] data = line.split(",");

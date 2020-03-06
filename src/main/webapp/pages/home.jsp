@@ -48,9 +48,11 @@ tr:nth-child(even) {
     <div class = "grid-container">
     <div class = "item1">
 	<h2>Upload file</h2>
-	<form action="/doUpload" method="post" enctype="multipart/form-data">
+	<form action="/doUpload" method="post" enctype="multipart/form-data" onsubmit="return validateMyForm3();">
 	    <label>File to Upload:</label><br>
-	    <input type="file" name="file">
+	    <input type="file" name="file" id="file"><br>
+	    <label for="replications">Replication factor (between 1 and 1000):</label>
+	    <input type="number" id="replications" name="replications" min="1" max="1000" value="1">
 	    <input type="hidden" name="user" value=  <%= request.getParameter("user")%> >
 	    <br>
 	    <button type="submit">Upload</button>
@@ -172,6 +174,18 @@ function genHandle3(row)
           alert("You cannot share file to yourself!")
           return false;
           }
+          return true;
+          }
+
+     function validateMyForm3(){
+          if(document.getElementById("replications").value==""){
+          alert("You cannot set replication factor as null!")
+          return false;
+          }
+          if(document.getElementById("file").value==""){
+                    alert("You must specify the file name!")
+                    return false;
+                    }
           return true;
           }
 

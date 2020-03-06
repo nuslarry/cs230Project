@@ -4,6 +4,7 @@ import com.example.demo.exception.StorageException;
 import com.example.demo.service.StorageService;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -66,7 +67,7 @@ public class HomeController {
     }
     
     @RequestMapping(value = "/download")
-    public ModelAndView download(@RequestParam("user")String user, @RequestParam("downloadFileName") String downloadFileName,@RequestParam(value = "downloadSharedUser",required = false) String sharedUser,HttpServletResponse response) {
+    public ModelAndView download(@RequestParam("user")String user, @RequestParam("downloadFileName") String downloadFileName,@RequestParam(value = "downloadSharedUser",required = false) String sharedUser,HttpServletResponse response) throws IOException {
 		if(downloadFileName == null || downloadFileName.isEmpty())
 			return null;
 		System.out.println(sharedUser);
@@ -78,7 +79,7 @@ public class HomeController {
     }
 
 	@RequestMapping(value = "/share")
-	public String share(@RequestParam("user")String user, @RequestParam("fileToShare") String fileToShare,@RequestParam("shareWith") String shareWith, HttpServletResponse response) {
+	public String share(@RequestParam("user")String user, @RequestParam("fileToShare") String fileToShare,@RequestParam("shareWith") String shareWith, HttpServletResponse response) throws IOException {
 		String result = storageService.updateUserInfo(user,fileToShare,shareWith);
 		return "redirect:/home?user="+user;
 	}
