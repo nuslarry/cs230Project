@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.exception.StorageException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +16,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +35,8 @@ public class StorageService {
 
 	@Value("${metadata.path}")
 	private String metadataPath;
+
+
     
     
     public void uploadFile(String user, MultipartFile file) {
