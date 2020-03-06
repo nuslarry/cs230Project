@@ -38,11 +38,11 @@ public class HomeController {
 //		return mv; 
 //	}
 	@RequestMapping("home")
-	public ModelAndView home(@RequestParam("user")String user, HttpSession session) { //can even acept an object 1:19:44
+	public ModelAndView home(@RequestParam("user")String user, HttpSession session) throws IOException { //can even acept an object 1:19:44
 		return getUserHome(user);
 	}
 	
-	public ModelAndView getUserHome(String user) {
+	public ModelAndView getUserHome(String user) throws IOException {
 		ModelAndView mv = new ModelAndView();
 		ArrayList<String[]> list = storageService.getUserDocumentsList(user);
 		mv.addObject("user", user);
