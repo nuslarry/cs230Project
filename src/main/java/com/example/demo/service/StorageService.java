@@ -35,7 +35,7 @@ public class StorageService {
 
     
     
-    public void uploadFile(String user, MultipartFile file) {
+    public void uploadFile(String user,int replications, MultipartFile file) {
 //        if (file.isEmpty()) {
 //            throw new StorageException("Failed to store empty file");
 //        }
@@ -44,7 +44,7 @@ public class StorageService {
         	InputStream is = file.getInputStream();
         	String userDocumentsPath = documentsPath + user + "/";
         	HDFSAccess.getInstance().createDirIfNotExist(userDocumentsPath);
-            HDFSAccess.getInstance().uploadFile(is, userDocumentsPath + fileName,3);
+            HDFSAccess.getInstance().uploadFile(is, userDocumentsPath + fileName,replications);
         } catch (IOException e) {
         	String msg = String.format("Failed to store file", file.getName());
             throw new StorageException(msg, e);

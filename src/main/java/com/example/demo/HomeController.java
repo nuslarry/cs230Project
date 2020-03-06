@@ -57,9 +57,9 @@ public class HomeController {
 
     @RequestMapping(value = "/doUpload", method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
-    public String upload(@RequestParam("user")String user, @RequestParam MultipartFile file) {
+    public String upload(@RequestParam("user")String user,@RequestParam("replications") int replications, @RequestParam MultipartFile file) {
 
-        storageService.uploadFile(user, file);
+        storageService.uploadFile(user,replications, file);
 
         //System.out.println("Success");
         //return "redirect:/success.html";
