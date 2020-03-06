@@ -149,8 +149,8 @@ public class StorageService {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					String[] data = line.split(",");
-					File f = new File(documentsPath + data[1] + "//" + data[0]);
-					results.add(new String[]{data[0], data[1], f.length() / 1024 +" KB"});
+					FileStatus fs = HDFSAccess.getInstance().getFileStatus(documentsPath + data[1] + "/" + data[0]);
+					results.add(new String[]{data[0], data[1], byteToSize(fs.getLen())});
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

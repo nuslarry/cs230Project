@@ -84,5 +84,9 @@ public class HDFSAccess {
         return hdfs.listFiles(new Path(dir),true);
     }
 
+    public FileStatus getFileStatus(String path) throws IOException {
+        return hdfs.getFileStatus(new Path(path));
+    }
+
 
 }
