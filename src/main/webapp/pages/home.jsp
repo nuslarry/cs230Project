@@ -57,28 +57,27 @@ tr:nth-child(even) {
 	</form>
 	<br>
 	<h2>Download file</h2>
-	<form action="/download">
-		<label>File to Download:</label><br>
-		<input type="text" id="downloadFileName" name="downloadFileName"><br>
+	<form action="/download" onsubmit="return validateMyForm();">
+		<input type="hidden" id="downloadFileName" name="downloadFileName">
+		<input type="hidden" id="downloadSharedUser" name="downloadSharedUser">
 		<input type="hidden" name="user" value=  <%= request.getParameter("user")%> >
-		<input type="submit" value="Submit">
+		<input type="submit" value="Download" id= "Download">
 	</form>
 	<br>
     <h2>Share file</h2>
-	<form action="/share">
-    		<label>File to Share:</label><br>
-    		<input type="text" id="fileToShare" name="fileToShare"><br>
+	<form action="/share" onsubmit="return validateMyForm2();">
+    		<input type="hidden" id="fileToShare" name="fileToShare" value = ><br>
     		<label>Share With:</label><br>
     		<input type="text" id="shareWith" name="shareWith"><br>
     		<input type="hidden" name="user" value=  <%= request.getParameter("user")%> >
-    		<input type="submit" value="Submit">
+    		<input type="submit" value="Share" id ="Share">
     	</form>
 	<br>
 	</div>
 	<div class="item2">
         <h2>Files: </h2>
         <br>
-	       <table>
+	       <table id="table1">
 	       <tr>
                <th>FileName</th>
                <th>Size</th>
@@ -97,7 +96,7 @@ tr:nth-child(even) {
 	<div class = "item3">
 		<h2>Shared with me: </h2>
 		<br>
-		<table>
+		<table id = "table2">
         	       <tr>
                        <th>FileName</th>
                        <th>SharedBy</th>
@@ -113,5 +112,99 @@ tr:nth-child(even) {
                    </table>
      </div>
     </div>
+    <script>
+    let table1 = document.getElementById("table1");
+    let table2 = document.getElementById("table2");
+    var selectedRow = null;
+    var selectedShared = null;
+    var recordedBg = null;
+function genHandle3(row)
+        {
+            return function(event) {
+            if(selectedRow!=row)
+            {
+            row.style.background="yellow";
+            }
+     };
+        };
+    function genHandle(row,sharedFile)
+    {
+    var oldbg = row.style.background;
+        return function() {
+        if(selectedRow != null){
+            selectedRow.style.background = recordedBg;
+        }
+        row.style.background="lightblue";
+        selectedRow = row;
+        selectedShared = sharedFile;
+        recordedBg = oldbg;
+    };
+ };
+
+    function genHandle2(row)
+        {
+        var oldbg = row.style.background;
+            return function(event) {
+            if(selectedRow != row){
+            row.style.background=oldbg;
+            }
+     };
+        };
+
+     function validateMyForm(){
+     if(selectedRow == null){
+     alert("You must select one file to download!")
+     return false;
+     }
+     return true;
+     }
+
+     function validateMyForm2(){
+          if(selectedRow == null){
+          alert("You must select one file to share!")
+          return false;
+          }
+          if(selectedShared){
+          alert("You must select your own file to share!")
+          return false;
+          }
+          if('${user}' == document.getElementById("shareWith").value){
+          alert("You cannot share file to yourself!")
+          return false;
+          }
+          return true;
+          }
+
+
+
+    for(var i=1;i<table1.rows.length;i++){
+    table1.rows[i].addEventListener("mouseenter",genHandle3(table1.rows[i]));
+    table1.rows[i].onclick= genHandle(table1.rows[i],false);
+    table1.rows[i].addEventListener("mouseleave",genHandle2(table1.rows[i]));
+    }
+    for(var i=1;i<table2.rows.length;i++){
+        table2.rows[i].addEventListener("mouseenter",genHandle3(table2.rows[i]));
+        table2.rows[i].onclick= genHandle(table2.rows[i],true);
+        table2.rows[i].addEventListener("mouseleave",genHandle2(table2.rows[i]));
+        }
+
+
+    var download = document.getElementById("Download");
+    var share = document.getElementById("Share");
+    download.onclick = function(){
+       if(!selectedShared){
+        document.getElementById("downloadFileName").value = selectedRow.children[0].innerText;
+        document.getElementById("downloadSharedUser").disabled = true
+       }else{
+       document.getElementById("downloadSharedUser").disabled = false
+       document.getElementById("downloadFileName").value = selectedRow.children[0].innerText;
+       document.getElementById("downloadSharedUser").value = selectedRow.children[1].innerText;
+       }
+    }
+    share.onclick = function(){
+    document.getElementById("fileToShare").value = selectedRow.children[0].innerText;
+    }
+    </script>
 </body>
+
 </html>

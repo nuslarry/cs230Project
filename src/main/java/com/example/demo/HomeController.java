@@ -13,7 +13,6 @@ import javax.servlet.http.HttpSession;
 import javax.swing.text.Document;
 
 import javafx.util.Pair;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -68,10 +67,14 @@ public class HomeController {
     }
     
     @RequestMapping(value = "/download")
-    public ModelAndView download(@RequestParam("user")String user, @RequestParam("downloadFileName") String downloadFileName, HttpServletResponse response) {
+    public ModelAndView download(@RequestParam("user")String user, @RequestParam("downloadFileName") String downloadFileName,@RequestParam(value = "downloadSharedUser",required = false) String sharedUser,HttpServletResponse response) {
 		if(downloadFileName == null || downloadFileName.isEmpty())
 			return null;
-		storageService.downloadFile(user, downloadFileName, response);
+		System.out.println(sharedUser);
+		if(sharedUser == null)
+			storageService.downloadFile(user, downloadFileName, response);
+		else
+			storageService.downloadFile(sharedUser,downloadFileName,response);
     	return null;
     }
 

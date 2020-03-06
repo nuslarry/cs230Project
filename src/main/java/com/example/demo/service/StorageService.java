@@ -1,8 +1,6 @@
 package com.example.demo.service;
 
 import com.example.demo.exception.StorageException;
-import javafx.util.Pair;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
