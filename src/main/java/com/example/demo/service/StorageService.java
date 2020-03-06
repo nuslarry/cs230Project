@@ -110,11 +110,13 @@ public class StorageService {
     
     
     public ArrayList<String[]> getUserDocumentsList(String user) throws IOException {
-		RemoteIterator<LocatedFileStatus> status = HDFSAccess.getInstance().listFiles(documentsPath + user);
 		ArrayList<String[]> results = new ArrayList<>();
-    	while(status.hasNext()){
-			LocatedFileStatus fs = status.next();
-    		results.add(new String[]{fs.getPath().getName(),byteToSize(fs.getLen())});
+    	if(HDFSAccess.getInstance().exists(documentsPath + user)){
+			RemoteIterator<LocatedFileStatus> status = HDFSAccess.getInstance().listFiles(documentsPath + user);
+			while(status.hasNext()){
+				LocatedFileStatus fs = status.next();
+				results.add(new String[]{fs.getPath().getName(),byteToSize(fs.getLen())});
+			}
 		}
     	return results;
     }
