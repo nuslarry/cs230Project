@@ -140,6 +140,11 @@ public class StorageService {
 		}
 	}
 
+	public void deleteFile(String user, String fileName) throws IOException {
+		String filePath = documentsPath + user+"/"+fileName;
+		HDFSAccess.getInstance().deleteFile(filePath);
+	}
+
 
 	public ArrayList<String[]> getSharedDocumentsList(String user) throws IOException {
 		ArrayList<String[]> results = new ArrayList<>();
@@ -149,8 +154,10 @@ public class StorageService {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					String[] data = line.split(",");
-					FileStatus fs = HDFSAccess.getInstance().getFileStatus(documentsPath + data[1] + "/" + data[0]);
-					results.add(new String[]{data[0], data[1], byteToSize(fs.getLen())});
+					if(HDFSAccess.getInstance().exists(documentsPath + data[1] + "/" + data[0])){
+						FileStatus fs = HDFSAccess.getInstance().getFileStatus(documentsPath + data[1] + "/" + data[0]);
+						results.add(new String[]{data[0], data[1], byteToSize(fs.getLen())});
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

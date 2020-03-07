@@ -83,6 +83,12 @@ public class HomeController {
 		String result = storageService.updateUserInfo(user,fileToShare,shareWith);
 		return "redirect:/home?user="+user;
 	}
+
+	@RequestMapping(value = "/delete")
+	public String delete(@RequestParam("user")String user, @RequestParam("fileToDelete") String fileToDelete, HttpServletResponse response) throws IOException {
+		storageService.deleteFile(user,fileToDelete);
+		return "redirect:/home?user="+user;
+	}
     
     
     @ExceptionHandler(StorageException.class)

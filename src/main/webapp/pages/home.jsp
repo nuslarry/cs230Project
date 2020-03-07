@@ -75,6 +75,12 @@ tr:nth-child(even) {
     		<input type="submit" value="Share" id ="Share">
     	</form>
 	<br>
+	<h2>Delete file</h2>
+    	<form action="/delete" onsubmit="return validateMyForm4();">
+        		<input type="hidden" id="fileToDelete" name="fileToDelete" value = ><br>
+        		<input type="hidden" name="user" value=  <%= request.getParameter("user")%> >
+        		<input type="submit" value="Delete" id ="Delete">
+        	</form>
 	</div>
 	<div class="item2">
         <h2>Files: </h2>
@@ -190,6 +196,19 @@ function genHandle3(row)
           }
 
 
+     function validateMyForm4(){
+          if(selectedRow == null){
+                    alert("You must select one file to delete!")
+                    return false;
+                    }
+                    if(selectedShared){
+                    alert("You must select your own file to delete!")
+                    return false;
+                    }
+          return true;
+          }
+
+
 
     for(var i=1;i<table1.rows.length;i++){
     table1.rows[i].addEventListener("mouseenter",genHandle3(table1.rows[i]));
@@ -205,6 +224,7 @@ function genHandle3(row)
 
     var download = document.getElementById("Download");
     var share = document.getElementById("Share");
+    var delete = document.getElementById("Delete");
     download.onclick = function(){
        if(!selectedShared){
         document.getElementById("downloadFileName").value = selectedRow.children[0].innerText;
@@ -218,6 +238,10 @@ function genHandle3(row)
     share.onclick = function(){
     document.getElementById("fileToShare").value = selectedRow.children[0].innerText;
     }
+
+    delete.onclick = function(){
+        document.getElementById("fileToDelete").value = selectedRow.children[0].innerText;
+        }
     </script>
 </body>
 
