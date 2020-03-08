@@ -52,7 +52,7 @@ public class HomeController {
 		Stopwatch sw = Stopwatch.createStarted();
         storageService.uploadFile(user,replications, file);
         sw.stop();
-        System.out.println("Time for uploading = "+sw.elapsed(TimeUnit.MILLISECONDS));
+        System.out.println("Time for uploading = "+sw.elapsed(TimeUnit.MILLISECONDS)+" user = "+user+" file = "+file.getName()+" replications = "+replications);
         return "redirect:/home?user="+user;
     }
     
@@ -66,7 +66,7 @@ public class HomeController {
 		else
 			storageService.downloadFile(sharedUser,downloadFileName,response);
 		sw.stop();
-		System.out.println("Time for downloading = "+sw.elapsed(TimeUnit.MILLISECONDS));
+		System.out.println("Time for downloading = "+sw.elapsed(TimeUnit.MILLISECONDS)+" user = "+user+" file = "+downloadFileName);
     	return null;
     }
 
