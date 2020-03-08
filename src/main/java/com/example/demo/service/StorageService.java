@@ -12,12 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.URI;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -36,9 +30,6 @@ public class StorageService {
     
     
     public void uploadFile(String user,int replications, MultipartFile file) {
-//        if (file.isEmpty()) {
-//            throw new StorageException("Failed to store empty file");
-//        }
         try {
         	String fileName = file.getOriginalFilename();
         	InputStream is = file.getInputStream();
