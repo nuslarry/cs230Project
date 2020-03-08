@@ -224,7 +224,7 @@ function genHandle3(row)
 
     var download = document.getElementById("Download");
     var share = document.getElementById("Share");
-    var delete = document.getElementById("Delete");
+    var delete1 = document.getElementById("Delete");
     download.onclick = function(){
        if(!selectedShared){
         document.getElementById("downloadFileName").value = selectedRow.children[0].innerText;
@@ -239,7 +239,7 @@ function genHandle3(row)
     document.getElementById("fileToShare").value = selectedRow.children[0].innerText;
     }
 
-    delete.onclick = function(){
+    delete1.onclick = function(){
         document.getElementById("fileToDelete").value = selectedRow.children[0].innerText;
         }
     </script>
