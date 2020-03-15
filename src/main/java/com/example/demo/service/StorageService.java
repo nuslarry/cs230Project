@@ -55,25 +55,27 @@ public class StorageService {
     		e.printStackTrace();
     	}
     }
-    
-    
-    public String updateUserInfo(String user, String fileName, String sharedWith) throws IOException {
-    	String filePath = documentsPath + user+"/"+fileName;
-    	if(!HDFSAccess.getInstance().exists(filePath))return "Share Failed: File does not exist";
-    	String userInfoPath = metadataPath + sharedWith + "/metadata.txt";
+
+
+	public String updateUserInfo(String user, String fileName, String sharedWith) throws IOException {
+		String filePath = documentsPath + user+"/"+fileName;
+		if(!HDFSAccess.getInstance().exists(filePath))return "Share Failed: File does not exist";
+		String userInfoPath = metadataPath + sharedWith + "/metadata.txt";
 		HDFSAccess.getInstance().createDirIfNotExist(metadataPath + sharedWith);
-    	if(!HDFSAccess.getInstance().exists(userInfoPath)){
+		if(!HDFSAccess.getInstance().exists(userInfoPath)){
 			try {
-				HDFSAccess.getInstance().createFile(userInfoPath,3);
+				HDFSAccess.getInstance().createFile(userInfoPath);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(HDFSAccess.getInstance().readFile(userInfoPath)));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(sharedWith+"-tempfile"));
 			String line;
 			boolean found = false;
 			while((line = reader.readLine())!=null) {
+				writer.write(line+"\n");
 				String[] data = line.split(",");
 				if(data[0].equals(fileName) && data[1].equals(user)){
 					found = true;
@@ -82,18 +84,21 @@ public class StorageService {
 			}
 			reader.close();
 			if(!found){
-				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(HDFSAccess.getInstance().appendFile(userInfoPath)));
 				writer.write(fileName+","+user+"\n");
 				writer.close();
+				HDFSAccess.getInstance().uploadFile(new FileInputStream(sharedWith+"-tempfile"), userInfoPath,3);
+				new File(sharedWith+"-tempfile").delete();
 				return "Share Succeed";
 			}else{
+				writer.close();
+				new File(sharedWith+"-tempfile").delete();
 				return "Share Failed: File has already shared with user: "+sharedWith;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return "Share Failed: Unknown Reason";
-    }
+	}
     
     
     public ArrayList<String[]> getUserDocumentsList(String user) throws IOException {
