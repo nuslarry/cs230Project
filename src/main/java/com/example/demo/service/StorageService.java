@@ -64,7 +64,7 @@ public class StorageService {
 		HDFSAccess.getInstance().createDirIfNotExist(metadataPath + sharedWith);
 		if(!HDFSAccess.getInstance().exists(userInfoPath)){
 			try {
-				HDFSAccess.getInstance().createFile(userInfoPath);
+				HDFSAccess.getInstance().createFile(userInfoPath, 3);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
