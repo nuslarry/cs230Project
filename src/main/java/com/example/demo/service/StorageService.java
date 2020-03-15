@@ -2,20 +2,16 @@ package com.example.demo.service;
 
 import com.example.demo.exception.StorageException;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class StorageService {
@@ -68,7 +64,7 @@ public class StorageService {
 		HDFSAccess.getInstance().createDirIfNotExist(metadataPath + sharedWith);
     	if(!HDFSAccess.getInstance().exists(userInfoPath)){
 			try {
-				HDFSAccess.getInstance().createFile(userInfoPath);
+				HDFSAccess.getInstance().createFile(userInfoPath,3);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

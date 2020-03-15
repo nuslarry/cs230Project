@@ -7,9 +7,6 @@ import org.apache.hadoop.fs.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Iterator;
 
 public class HDFSAccess {
 
@@ -19,7 +16,7 @@ public class HDFSAccess {
 
     private HDFSAccess() throws IOException {
         Configuration conf = new Configuration ();
-        conf.set("fs.default.name", "hdfs://3.233.215.15:8020");
+        conf.set("fs.default.name", "hdfs://localhost:9000");
         hdfs = FileSystem.get(conf);
     }
 
@@ -47,8 +44,10 @@ public class HDFSAccess {
         return false;
     }
 
-    public boolean createFile(String path) throws IOException {
-        return hdfs.createNewFile(new Path(path));
+    public boolean createFile(String path,int replicationFactor) throws IOException {
+        hdfs.createNewFile(new Path(path));
+        hdfs.create(new Path(path),(short)replicationFactor).close();
+        return false;
     }
 
     public boolean uploadFile(InputStream src,String dstPath,int replicationFactor) throws IOException {
